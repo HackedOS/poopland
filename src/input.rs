@@ -5,13 +5,13 @@ use smithay::{
     },
     input::{
         keyboard::FilterResult,
-        pointer::{AxisFrame, ButtonEvent, MotionEvent},
+        pointer::{AxisFrame, ButtonEvent, Focus, GrabStartData, MotionEvent},
     },
     reexports::wayland_server::protocol::wl_surface::WlSurface,
     utils::SERIAL_COUNTER,
 };
 
-use crate::state::PoopLand;
+use crate::{grabs::MoveSurfaceGrab, state::PoopLand};
 
 impl PoopLand {
     pub fn process_input_event<I: InputBackend>(&mut self, event: InputEvent<I>) {
@@ -62,6 +62,33 @@ impl PoopLand {
                 let button = event.button_code();
 
                 let button_state = event.state();
+
+                if self.seat.get_keyboard().unwrap().modifier_state().logo
+                    && self.seat.get_keyboard().unwrap().modifier_state().ctrl
+                {
+                    match self.space.element_under(pointer.current_location()) {
+                        Some((window, _loc)) => {
+                            let window = window.clone();
+                            let start_data = GrabStartData {
+                                focus: None,
+                                button,
+                                location: pointer.current_location(),
+                            };
+
+                            let initial_window_location =
+                                self.space.element_location(&window).unwrap();
+
+                            let grab = MoveSurfaceGrab {
+                                start_data,
+                                window,
+                                initial_window_location,
+                            };
+
+                            pointer.set_grab(self, grab, serial, Focus::Clear);
+                        }
+                        None => {}
+                    }
+                }
 
                 if ButtonState::Pressed == button_state && !pointer.is_grabbed() {
                     if let Some((window, _loc)) = self
