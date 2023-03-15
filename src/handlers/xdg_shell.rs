@@ -3,15 +3,13 @@ use smithay::{
     desktop::{Space, Window},
     input::{pointer::GrabStartData as PointerGrabStartData, Seat},
     reexports::{
-        wayland_protocols::xdg::{
-            decoration::zv1::server::zxdg_toplevel_decoration_v1::Mode, shell::server::xdg_toplevel,
-        },
+        wayland_protocols::xdg::decoration::zv1::server::zxdg_toplevel_decoration_v1::Mode,
         wayland_server::{
             protocol::{wl_seat, wl_surface::WlSurface},
             Resource,
         },
     },
-    utils::{Serial, Size},
+    utils::Serial,
     wayland::{
         compositor::with_states,
         shell::xdg::{
@@ -87,7 +85,7 @@ fn check_grab(
 
 /// Should be called on `WlSurface::commit`
 pub fn handle_commit(space: &mut Space<Window>, surface: &WlSurface) -> Option<()> {
-    let window = space
+    let _window = space
         .elements()
         .find(|w| w.toplevel().wl_surface() == surface)
         .cloned()?;

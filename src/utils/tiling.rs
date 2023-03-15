@@ -11,7 +11,7 @@ pub fn bsp_layout(space: &Space<Window>) -> Vec<Rectangle<i32, Logical>> {
     let mut layout: Vec<Rectangle<i32, Logical>> = Vec::new();
     let noofwindows = space.elements().count();
     let mut tileside = false;
-    for (index, window) in space.elements().enumerate() {
+    for i in 0..noofwindows {
         let loc;
         if tileside {
             loc = Point::from((1920 - current_geometry.size.w, current_geometry.loc.y))
@@ -19,7 +19,7 @@ pub fn bsp_layout(space: &Space<Window>) -> Vec<Rectangle<i32, Logical>> {
             loc = Point::from((current_geometry.loc.x, 1080 - current_geometry.size.h))
         }
         tileside = !tileside;
-        if noofwindows > index + 1 {
+        if noofwindows > i + 1 {
             let size;
             if tileside {
                 size = Size::from((current_geometry.size.w / 2, current_geometry.size.h));
