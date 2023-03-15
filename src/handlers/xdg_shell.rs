@@ -3,13 +3,15 @@ use smithay::{
     desktop::{Space, Window},
     input::{pointer::GrabStartData as PointerGrabStartData, Seat},
     reexports::{
-        wayland_protocols::xdg::decoration::zv1::server::zxdg_toplevel_decoration_v1::Mode,
+        wayland_protocols::xdg::{
+            decoration::zv1::server::zxdg_toplevel_decoration_v1::Mode, shell::server::xdg_toplevel,
+        },
         wayland_server::{
             protocol::{wl_seat, wl_surface::WlSurface},
             Resource,
         },
     },
-    utils::Serial,
+    utils::{Serial, Size},
     wayland::{
         compositor::with_states,
         shell::xdg::{
@@ -19,7 +21,7 @@ use smithay::{
     },
 };
 
-use crate::PoopLand;
+use crate::{utils::bsp_layout, PoopLand};
 
 impl XdgShellHandler for PoopLand {
     fn xdg_shell_state(&mut self) -> &mut XdgShellState {
@@ -84,7 +86,7 @@ fn check_grab(
 }
 
 /// Should be called on `WlSurface::commit`
-pub fn handle_commit(space: &Space<Window>, surface: &WlSurface) -> Option<()> {
+pub fn handle_commit(space: &mut Space<Window>, surface: &WlSurface) -> Option<()> {
     let window = space
         .elements()
         .find(|w| w.toplevel().wl_surface() == surface)
@@ -101,7 +103,16 @@ pub fn handle_commit(space: &Space<Window>, surface: &WlSurface) -> Option<()> {
     });
 
     if !initial_configure_sent {
-        window.toplevel().send_configure();
+        let layout = bsp_layout(space);
+        let windows: Vec<_> = space.elements().cloned().collect();
+        for (i, window) in windows.iter().enumerate() {
+            space.map_element(window.clone(), layout[i].loc, false);
+            let xdg_toplevel = window.toplevel();
+            xdg_toplevel.with_pending_state(|state| {
+                state.size = Some(layout[i].size);
+            });
+            xdg_toplevel.send_configure();
+        }
     }
 
     Some(())

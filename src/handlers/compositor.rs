@@ -33,7 +33,7 @@ impl CompositorHandler for PoopLand {
             }
         };
 
-        xdg_shell::handle_commit(&self.space, surface);
+        xdg_shell::handle_commit(&mut self.space, surface);
         resize_grab::handle_commit(&mut self.space, surface);
     }
 }

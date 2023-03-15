@@ -7,6 +7,7 @@ mod handlers;
 mod grabs;
 mod input;
 mod state;
+mod utils;
 mod winit;
 
 use smithay::reexports::{calloop::EventLoop, wayland_server::Display};
